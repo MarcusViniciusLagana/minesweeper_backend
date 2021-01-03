@@ -1,4 +1,8 @@
-function CountMines (index, rowsNumber, columnsNumber, minesPositions) {
+function CountMines (index, game) {
+    const rowsNumber = game.rowsNumber;
+    const columnsNumber = game.columnsNumber;
+    const minesPositions = game.minesPositions;
+
     const cssClasses = ['', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight'];
     // index = row * columnsNumber + column
     // index/columnsNumber = row (quotient) + column/columnsNumber (remainder)
@@ -23,7 +27,10 @@ function CountMines (index, rowsNumber, columnsNumber, minesPositions) {
     return([mines === 0 ? '' : mines, 'clicked ' + cssClasses[mines], positions]);
 }
 
-function OpenAllSquares (squaresValues, squaresCSS, rows, columns, mineSymbol, minesPositions, win) {
+function OpenAllSquares (squaresValues, squaresCSS, game, win) {
+    const minesPositions = game.minesPositions;
+    const mineSymbol = game.mineSymbol;
+
     for (let index = 0, length = squaresValues.length; index < length; index++) {
         if (minesPositions.includes(index)) {
             squaresValues[index] = squaresCSS[index] === 'saved' || win ? '\u2713' : mineSymbol;
@@ -34,25 +41,22 @@ function OpenAllSquares (squaresValues, squaresCSS, rows, columns, mineSymbol, m
             squaresCSS[index] = 'exploded';
         }
         if (!squaresCSS[index]) {
-            [squaresValues[index], squaresCSS[index]] = CountMines(index, rows, columns, minesPositions);
+            [squaresValues[index], squaresCSS[index]] = CountMines(index, game);
         }
     }
     return;
 }
 
 function OpenSquare (index, squaresValues, squaresCSS, game, win) {
-    const rows = game.rowsNumber;
-    const columns = game.columnsNumber;
     const minesPositions = game.minesPositions;
-    const mineSymbol = game.mineSymbol;
 
     if (win) {
-        OpenAllSquares(squaresValues, squaresCSS, rows, columns, mineSymbol, minesPositions, win);
+        OpenAllSquares(squaresValues, squaresCSS, game, win);
         return true;
     }
 
     if (minesPositions.includes(index)) {
-        OpenAllSquares(squaresValues, squaresCSS, rows, columns, mineSymbol, minesPositions, win);
+        OpenAllSquares(squaresValues, squaresCSS, game, win);
         squaresCSS[index] = 'clicked';
         return false;
     }
@@ -67,7 +71,7 @@ function OpenSquare (index, squaresValues, squaresCSS, game, win) {
             // Count mines around the square, update value with the number of mines
             // and squaresCSS with 'clicked ' + the number of mines as text
             // positions keep the indexes of the squares around
-            [squaresValues[allPositions[i]], squaresCSS[allPositions[i]], positions] = CountMines(allPositions[i], rows, columns, minesPositions);
+            [squaresValues[allPositions[i]], squaresCSS[allPositions[i]], positions] = CountMines(allPositions[i], game);
             if (!squaresValues[allPositions[i]]) {
                 for (const pos of positions) if (!allPositions.includes(pos)) allPositions.push(pos);
             }
