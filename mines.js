@@ -1,4 +1,4 @@
-function CountMines (index, rowsNumber, columnsNumber) {
+function CountMines (index, rowsNumber, columnsNumber, minesPositions) {
     const cssClasses = ['', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight'];
     // index = row * columnsNumber + column
     // index/columnsNumber = row (quotient) + column/columnsNumber (remainder)
@@ -23,10 +23,10 @@ function CountMines (index, rowsNumber, columnsNumber) {
     return([mines === 0 ? '' : mines, 'clicked ' + cssClasses[mines], positions]);
 }
 
-function OpenAllSquares (squaresValues, squaresCSS, rows, columns, win=false) {
+function OpenAllSquares (squaresValues, squaresCSS, rows, columns, mineSymbol, minesPositions, win) {
     for (let index = 0, length = squaresValues.length; index < length; index++) {
         if (minesPositions.includes(index)) {
-            squaresValues[index] = squaresCSS[index] === 'saved' || win ? '\u2713' : bombSymbol;
+            squaresValues[index] = squaresCSS[index] === 'saved' || win ? '\u2713' : mineSymbol;
             squaresCSS[index] = squaresCSS[index] === 'saved' || win ? 'saved-true' : 'clicked exploded';
         }
         if (squaresCSS[index] === 'saved') {
@@ -34,21 +34,25 @@ function OpenAllSquares (squaresValues, squaresCSS, rows, columns, win=false) {
             squaresCSS[index] = 'exploded';
         }
         if (!squaresCSS[index]) {
-            [squaresValues[index], squaresCSS[index]] = CountMines(index, rows, columns);
+            [squaresValues[index], squaresCSS[index]] = CountMines(index, rows, columns, minesPositions);
         }
     }
     return;
 }
 
-export default function OpenSquare (index, squaresValues, squaresCSS, rows, columns, win=false) {
+function OpenSquare (index, squaresValues, squaresCSS, game, win) {
+    const rows = game.rowsNumber;
+    const columns = game.columnsNumber;
+    const minesPositions = game.minesPositions;
+    const mineSymbol = game.mineSymbol;
 
     if (win) {
-        OpenAllSquares(squaresValues, squaresCSS, rows, columns, win);
+        OpenAllSquares(squaresValues, squaresCSS, rows, columns, mineSymbol, minesPositions, win);
         return true;
     }
 
     if (minesPositions.includes(index)) {
-        OpenAllSquares(squaresValues, squaresCSS, rows, columns);
+        OpenAllSquares(squaresValues, squaresCSS, rows, columns, mineSymbol, minesPositions, win);
         squaresCSS[index] = 'clicked';
         return false;
     }
@@ -63,7 +67,7 @@ export default function OpenSquare (index, squaresValues, squaresCSS, rows, colu
             // Count mines around the square, update value with the number of mines
             // and squaresCSS with 'clicked ' + the number of mines as text
             // positions keep the indexes of the squares around
-            [squaresValues[allPositions[i]], squaresCSS[allPositions[i]], positions] = CountMines(allPositions[i], rows, columns);
+            [squaresValues[allPositions[i]], squaresCSS[allPositions[i]], positions] = CountMines(allPositions[i], rows, columns, minesPositions);
             if (!squaresValues[allPositions[i]]) {
                 for (const pos of positions) if (!allPositions.includes(pos)) allPositions.push(pos);
             }
@@ -71,4 +75,6 @@ export default function OpenSquare (index, squaresValues, squaresCSS, rows, colu
         if (i < allPositions.length - 1) i++;
         else return true;
     }
-}
+};
+
+module.exports = OpenSquare;
