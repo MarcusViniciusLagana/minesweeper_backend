@@ -1,7 +1,4 @@
-function CountMines (index, game) {
-    const rowsNumber = game.rowsNumber;
-    const columnsNumber = game.columnsNumber;
-    const minesPositions = game.minesPositions;
+function CountMines (index, { rowsNumber, columnsNumber, minesPositions }) {
 
     const cssClasses = ['', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight'];
     // index = row * columnsNumber + column
@@ -28,8 +25,7 @@ function CountMines (index, game) {
 }
 
 function OpenAllSquares (squaresValues, squaresCSS, game, win) {
-    const minesPositions = game.minesPositions;
-    const mineSymbol = game.mineSymbol;
+    const { minesPositions, mineSymbol } = game;
 
     for (let index = 0, length = squaresValues.length; index < length; index++) {
         if (minesPositions.includes(index)) {
@@ -48,7 +44,7 @@ function OpenAllSquares (squaresValues, squaresCSS, game, win) {
 }
 
 function OpenSquare (index, squaresValues, squaresCSS, game, win) {
-    const minesPositions = game.minesPositions;
+    const { minesPositions } = game;
 
     if (win) {
         OpenAllSquares(squaresValues, squaresCSS, game, win);
