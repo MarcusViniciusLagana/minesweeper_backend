@@ -54,7 +54,8 @@ function verifyBody (minesNumber, rowsNumber, columnsNumber) {
   if (columnsNumber <= 0)
     return {status: 'failed', msg: `Invalid number of columns: ${columnsNumber}`};
   if (minesNumber > rowsNumber * columnsNumber)
-    return {status: 'failed', msg: `Invalid number of mines: ${minesNumber} > game-board (${rowsNumber * columnsNumber})`};
+    return {status: 'failed', msg: `Invalid number of mines: ${minesNumber} > game-board (${
+      rowsNumber * columnsNumber})`};
   return null;
 }
 
@@ -65,9 +66,7 @@ function verifyBody (minesNumber, rowsNumber, columnsNumber) {
 
 // ==================== Initialize a Game ======================================================== POST
 app.post('/Init', async (req, res) => {
-  const minesNumber = req.body.minesNumber;
-  const rowsNumber = req.body.rowsNumber;
-  const columnsNumber = req.body.columnsNumber;
+  const { minesNumber, rowsNumber, columnsNumber } = req.body;
 
   // Validating Body ==================================================================================
   const message = verifyBody(minesNumber, rowsNumber, columnsNumber);
@@ -83,7 +82,8 @@ app.post('/Init', async (req, res) => {
   const mineSymbol = sortMineSymbol();
 
   // Creating game ====================================================================================
-  const { insertedCount, insertedId } = await games.insertOne({ rowsNumber, columnsNumber, minesNumber, mineSymbol, minesPositions });
+  const { insertedCount, insertedId } = await games.insertOne({ rowsNumber, columnsNumber,
+    minesNumber, mineSymbol, minesPositions });
 
   // Validating creation ==============================================================================
   if (insertedCount !== 1) {
@@ -92,7 +92,7 @@ app.post('/Init', async (req, res) => {
   }
 
   // Returning game id ================================================================================
-  res.send({ status: 'ok', msg: 'Game created successfully', id: insertedId});
+  res.send({ status: 'ok', msg: `Game ${insertedId} created successfully`, gameID: insertedId});
 });
 
 
@@ -112,7 +112,7 @@ app.get('/data', async (req, res) => {
 
 // ==================== Open a Square and update state in the front-end =========================== GET
 app.get('/OpenSquare', async (req, res) => {
-  const id = req.query.id;
+  const id = req.query.gameID;
 
   // Validating id ====================================================================================
   const game = await getGameByID(id);
@@ -127,18 +127,20 @@ app.get('/OpenSquare', async (req, res) => {
   let squaresCSS = Array.isArray(req.query.squaresCSS) ? req.query.squaresCSS.slice() : [];
   const win = req.query.win;
 
-  if (win !== true && (index <= 0 || typeof(index) !== "number")) {
+  if (win !== true && (index < 0 || typeof(index) !== "number")) {
     res.send({status: 'failed', msg: `Invalid type (${typeof(index)}) or index value (${index})`});
     return;
   }
   if (squaresValues.length !== game.rowsNumber * game.columnsNumber) {
     res.send({status: 'failed',
-      msg: `Squares length (${squaresValues.length}) not equal game-board (${game.rowsNumber * game.columnsNumber}) or type error (${typeof(req.query.squaresValues)})`});
+      msg: `Squares length (${squaresValues.length}) not equal game-board (${
+        game.rowsNumber * game.columnsNumber}) or type error (${typeof(req.query.squaresValues)})`});
     return;
   }
   if (squaresCSS.length !== game.rowsNumber * game.columnsNumber) {
     res.send({status: 'failed',
-      msg: `CSS length (${squaresCSS.length}) not equal game-board (${game.rowsNumber * game.columnsNumber}) or type error (${typeof(req.query.squaresCSS)})`});
+      msg: `CSS length (${squaresCSS.length}) not equal game-board (${
+        game.rowsNumber * game.columnsNumber}) or type error (${typeof(req.query.squaresCSS)})`});
     return;
   }
   
@@ -157,7 +159,7 @@ app.get('/OpenSquare', async (req, res) => {
 
 // ==================== Restart the Game ========================================================== PUT
 app.put('/Restart', async (req, res) => {
-  const id = req.body.id;
+  const id = req.body.gameID;
 
   // Validating id ====================================================================================
   const game = await getGameByID(id); 
@@ -209,7 +211,7 @@ app.put('/Restart', async (req, res) => {
 
 // ==================== Remove Game ============================================================ DELETE
 app.delete('/end', async (req, res) => {
-  const id = req.body.id;
+  const id = req.body.gameID;
 
   // Validating id ====================================================================================
   if (await games.countDocuments({ _id: mongodb.ObjectId(id) }) !== 1) {
