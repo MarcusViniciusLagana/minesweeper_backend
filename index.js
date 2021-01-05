@@ -1,5 +1,5 @@
 const express = require('express');
-const cors = require('cors');
+//const cors = require('cors');
 const bodyParser = require('body-parser');
 const mongodb = require('mongodb');
 const OpenSquare = require('./mines');
@@ -8,7 +8,8 @@ const port = process.env.PORT || 3005;
 
 (async () => {
 
-const connectionString = 'mongodb://localhost:27017/minesweeper';
+//const connectionString = 'mongodb://localhost:27017/minesweeper';
+const connectionString = `mongodb+srv://${process.env.MONGODB_USER}:${process.env.MONGODB_PASSWORD}@cluster0.gmcli.mongodb.net/minesweeper?retryWrites=true&w=majority`
 const options = { useUnifiedTopology: true };
 console.info('Conecting to MongoDB...');
 
@@ -16,7 +17,7 @@ const client = await mongodb.MongoClient.connect(connectionString, options);
 
 const app = express();
 app.use(bodyParser.json());
-app.use(cors({ origin: 'http://localhost:3000' }));
+//app.use(cors({ origin: 'http://localhost:3000' }));
 
 const games = client.db('minesweeper').collection('games');
 
